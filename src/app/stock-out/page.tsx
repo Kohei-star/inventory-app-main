@@ -1,17 +1,16 @@
-import { createClient } from '@/lib/supabase/server'
-import StockForm from '@/components/StockForm'
+import Link from 'next/link'
 
-export default async function StockOutPage() {
-  const supabase = await createClient()
-  const { data: items } = await supabase
-    .from('items')
-    .select('*')
-    .order('no')
-
+export default function StockOutPage() {
   return (
-    <div>
-      <h2 className="text-xl font-bold text-gray-800 mb-4">📤 使用登録</h2>
-      <StockForm items={items ?? []} type="out" />
+    <div className="text-center py-16 space-y-4">
+      <div className="text-sm" style={{ color: '#6b6b6b' }}>
+        使用の登録は一覧画面から直接行えます
+      </div>
+      <Link href="/"
+        className="inline-block px-6 py-3 rounded-xl text-sm font-medium"
+        style={{ background: '#1e3a5f', color: '#fff' }}>
+        一覧へ戻る
+      </Link>
     </div>
   )
 }

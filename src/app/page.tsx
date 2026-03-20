@@ -1,86 +1,129 @@
-import { createClient } from '@/lib/supabase/server'
+'use client'
+
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { Item } from '@/types'
+import QuickAction from '@/components/QuickAction'
 import Link from 'next/link'
 
-export default async function HomePage() {
-  const supabase = await createClient()
-  const { data: items } = await supabase
-    .from('items')
-    .select('id, name, current_stock, min_stock')
-    .not('min_stock', 'is', null)
-    .order('name')
+const CATEGORY_LABELS: Record<string, string> = {
+  consumable: '消耗品',
+  sellable: '販売品',
+  equipment: '備品',
+}
 
-  const lowStock = items?.filter(i => i.current_stock <= (i.min_stock ?? 0)) ?? []
+export default function HomePage() {
+  const [items, setItems] = useState<Item[]>([])
+  const [search, setSearch] = useState('')
+  const [category, setCategory] = useState<string>('all')
+  const [loading, setLoading] = useState(true)
+  const supabase = createClient()
 
-  const { data: recentTx } = await supabase
-    .from('stock_transactions')
-    .select('id, type, quantity, note, transaction_date, items(name)')
-    .order('created_at', { ascending: false })
-    .limit(5)
+  useEffect(() => {
+    supabase.from('items').select('*').order('no').then(({ data }) => {
+      if (data) setItems(data)
+      setLoading(false)
+    })
+  }, [])
+
+  const filtered = items.filter(item => {
+    const matchSearch = item.name.toLowerCase().includes(search.toLowerCase())
+    const matchCat = category === 'all' || item.category === category
+    return matchSearch && matchCat
+  })
+
+  const lowStock = items.filter(i => i.min_stock != null && i.current_stock <= i.min_stock)
+
+  if (loading) return (
+    <div className="flex items-center justify-center py-20">
+      <div className="text-sm" style={{ color: '#6b6b6b' }}>読み込み中...</div>
+    </div>
+  )
 
   return (
-    <div className="space-y-6">
-      {/* メインボタン */}
-      <div className="grid grid-cols-2 gap-4">
-        <Link href="/stock-in"
-          className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl p-6 flex flex-col items-center gap-3 shadow-md active:scale-95 transition-transform">
-          <span className="text-5xl">📥</span>
-          <span className="text-xl font-bold">入　庫</span>
-          <span className="text-sm opacity-80">商品が届いたとき</span>
-        </Link>
-        <Link href="/stock-out"
-          className="bg-green-500 hover:bg-green-600 text-white rounded-2xl p-6 flex flex-col items-center gap-3 shadow-md active:scale-95 transition-transform">
-          <span className="text-5xl">📤</span>
-          <span className="text-xl font-bold">使　用</span>
-          <span className="text-sm opacity-80">在庫を使うとき</span>
-        </Link>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <Link href="/inventory"
-          className="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl p-5 flex flex-col items-center gap-2 shadow-md active:scale-95 transition-transform">
-          <span className="text-4xl">📝</span>
-          <span className="text-lg font-bold">棚卸し</span>
-        </Link>
-        <Link href="/reports"
-          className="bg-purple-500 hover:bg-purple-600 text-white rounded-2xl p-5 flex flex-col items-center gap-2 shadow-md active:scale-95 transition-transform">
-          <span className="text-4xl">📊</span>
-          <span className="text-lg font-bold">レポート</span>
-        </Link>
-      </div>
-
+    <div className="space-y-4">
       {/* 在庫不足アラート */}
       {lowStock.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-          <h2 className="text-red-700 font-bold mb-2">⚠️ 在庫不足 ({lowStock.length}品目)</h2>
-          <ul className="space-y-1">
-            {lowStock.map(item => (
-              <li key={item.id} className="text-sm text-red-600 flex justify-between">
-                <span>{item.name}</span>
-                <span className="font-bold">残{item.current_stock}</span>
-              </li>
+        <div className="rounded-xl p-4" style={{ background: '#fdf1ec', border: '1px solid #e8b89a' }}>
+          <div className="text-sm font-semibold mb-2" style={{ color: '#b5644a' }}>
+            在庫の補充をご確認ください（{lowStock.length}品目）
+          </div>
+          <div className="space-y-1">
+            {lowStock.map(i => (
+              <div key={i.id} className="flex justify-between text-sm" style={{ color: '#8a4a32' }}>
+                <span>{i.name}</span>
+                <span className="font-medium">残 {i.current_stock}</span>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
 
-      {/* 最近の履歴 */}
-      {recentTx && recentTx.length > 0 && (
-        <div className="bg-white rounded-xl shadow p-4">
-          <h2 className="font-bold text-gray-700 mb-3">最近の操作</h2>
-          <ul className="space-y-2">
-            {recentTx.map((tx: any) => (
-              <li key={tx.id} className="flex items-center gap-3 text-sm">
-                <span>{tx.type === 'in' ? '📥' : tx.type === 'out' ? '📤' : '📝'}</span>
-                <span className="flex-1 text-gray-800">{tx.items?.name}</span>
-                <span className={`font-bold ${tx.type === 'in' ? 'text-blue-600' : 'text-green-600'}`}>
-                  {tx.type === 'in' ? '+' : '-'}{tx.quantity}
-                </span>
-                <span className="text-gray-400">{new Date(tx.transaction_date).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}</span>
-              </li>
-            ))}
-          </ul>
+      {/* 検索・フィルター */}
+      <div className="space-y-2">
+        <input
+          type="text"
+          placeholder="品目を検索..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+          style={{ background: '#fff', border: '1px solid #e8e6e3', color: '#2a2a2a' }}
+        />
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {['all', 'consumable', 'sellable', 'equipment'].map(cat => (
+            <button key={cat}
+              onClick={() => setCategory(cat)}
+              className="flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-medium transition-colors"
+              style={{
+                background: category === cat ? '#1e3a5f' : '#fff',
+                color: category === cat ? '#fff' : '#6b6b6b',
+                border: '1px solid ' + (category === cat ? '#1e3a5f' : '#e8e6e3'),
+              }}>
+              {cat === 'all' ? 'すべて' : CATEGORY_LABELS[cat]}
+            </button>
+          ))}
         </div>
-      )}
+      </div>
+
+      {/* 品目リスト */}
+      <div className="space-y-2">
+        {filtered.map(item => {
+          const isLow = item.min_stock != null && item.current_stock <= item.min_stock
+          return (
+            <div key={item.id} className="rounded-xl p-4"
+              style={{ background: '#fff', border: '1px solid ' + (isLow ? '#e8b89a' : '#e8e6e3') }}>
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex-1 pr-3">
+                  <div className="font-medium text-sm leading-snug" style={{ color: '#2a2a2a' }}>{item.name}</div>
+                  <div className="text-xs mt-0.5" style={{ color: '#6b6b6b' }}>
+                    {item.storage_location && <span>{item.storage_location}</span>}
+                    {item.vendor && <span className="ml-2">{item.vendor}</span>}
+                  </div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <div className="text-2xl font-bold leading-tight"
+                    style={{ color: isLow ? '#b5644a' : '#1e3a5f' }}>
+                    {item.current_stock}
+                  </div>
+                  {item.purchase_unit && (
+                    <div className="text-xs" style={{ color: '#6b6b6b' }}>{item.purchase_unit}</div>
+                  )}
+                </div>
+              </div>
+              <QuickAction item={item} onDone={updated =>
+                setItems(prev => prev.map(i => i.id === updated.id ? updated : i))
+              } />
+            </div>
+          )
+        })}
+      </div>
+
+      {/* 品目追加ボタン */}
+      <Link href="/items/new"
+        className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl text-sm font-medium"
+        style={{ border: '1.5px dashed #bbb', color: '#6b6b6b' }}>
+        ＋ 品目を追加する
+      </Link>
     </div>
   )
 }

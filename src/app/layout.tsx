@@ -2,36 +2,45 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: '在庫管理システム',
+  title: '在庫管理',
   description: '消耗品・備品の在庫管理',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ja">
-      <body className="bg-gray-50 min-h-screen">
-        <header className="bg-blue-600 text-white px-4 py-3 shadow">
-          <div className="max-w-2xl mx-auto flex items-center gap-3">
-            <span className="text-xl">📦</span>
-            <h1 className="text-lg font-bold">在庫管理システム</h1>
+      <body className="min-h-screen" style={{ background: '#f5f4f2', color: '#2a2a2a', fontFamily: "'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif" }}>
+        <header style={{ background: '#1e3a5f', color: '#fff' }} className="px-5 py-4 shadow-md">
+          <div className="max-w-lg mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded" style={{ background: '#2d5a8e' }} />
+              <span className="font-semibold text-base tracking-wide">在庫管理</span>
+            </div>
           </div>
         </header>
-        <main className="max-w-2xl mx-auto px-4 py-6">{children}</main>
-        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex">
-          {[
-            { href: '/', icon: '🏠', label: 'ホーム' },
-            { href: '/stock-in', icon: '📥', label: '入庫' },
-            { href: '/stock-out', icon: '📤', label: '使用' },
-            { href: '/items', icon: '📋', label: '在庫一覧' },
-            { href: '/reports', icon: '📊', label: 'レポート' },
-          ].map(({ href, icon, label }) => (
-            <a key={href} href={href} className="flex-1 flex flex-col items-center py-2 text-gray-500 hover:text-blue-600 text-xs gap-1">
-              <span className="text-xl">{icon}</span>
-              {label}
-            </a>
-          ))}
+
+        <main className="max-w-lg mx-auto px-4 py-5 pb-24">
+          {children}
+        </main>
+
+        <nav className="fixed bottom-0 left-0 right-0 border-t" style={{ background: '#fff', borderColor: '#e8e6e3' }}>
+          <div className="max-w-lg mx-auto flex">
+            {[
+              { href: '/', icon: '▦', label: '一覧' },
+              { href: '/stock-in', icon: '↓', label: '入庫' },
+              { href: '/stock-out', icon: '↑', label: '使用' },
+              { href: '/inventory', icon: '✓', label: '棚卸し' },
+              { href: '/reports', icon: '≡', label: 'レポート' },
+            ].map(({ href, icon, label }) => (
+              <a key={href} href={href}
+                className="flex-1 flex flex-col items-center py-3 gap-0.5 text-xs transition-colors"
+                style={{ color: '#6b6b6b' }}>
+                <span className="text-lg leading-tight">{icon}</span>
+                <span>{label}</span>
+              </a>
+            ))}
+          </div>
         </nav>
-        <div className="h-16" />
       </body>
     </html>
   )
