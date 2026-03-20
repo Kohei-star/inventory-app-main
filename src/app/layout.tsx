@@ -1,16 +1,29 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Connect Place 在庫管理',
   description: '消耗品・備品の在庫管理',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Connect Place 在庫管理',
+  },
+  manifest: '/manifest.json',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#1e3a5f',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ja">
       <body className="min-h-screen" style={{ background: '#f5f4f2', color: '#2a2a2a', fontFamily: "'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif" }}>
-        <header style={{ background: '#1e3a5f', color: '#fff' }} className="px-5 py-4 shadow-md">
+        <header style={{ background: '#1e3a5f', color: '#fff', paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }} className="px-5 pb-4 shadow-md">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded" style={{ background: '#2d5a8e' }} />
@@ -23,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
 
-        <nav className="fixed bottom-0 left-0 right-0 border-t" style={{ background: '#fff', borderColor: '#e8e6e3' }}>
+        <nav className="fixed bottom-0 left-0 right-0 border-t" style={{ background: '#fff', borderColor: '#e8e6e3', paddingBottom: 'env(safe-area-inset-bottom)' }}>
           <div className="max-w-lg mx-auto flex">
             {[
               { href: '/', icon: '▦', label: '一覧' },
