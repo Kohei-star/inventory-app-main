@@ -8,9 +8,12 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Connect Place 在庫管理',
+    title: '在庫管理',
   },
   manifest: '/manifest.json',
+  icons: {
+    apple: '/apple-touch-icon.png',
+  },
 }
 
 export const viewport: Viewport = {
@@ -27,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <header style={{ background: '#1e3a5f', color: '#fff', paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }} className="px-5 pb-4 shadow-md">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Image src="/logo.jpg" alt="Connect Place" width={80} height={32} style={{ objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+              <Image src="/logo.jpg" alt="Connect Place" width={80} height={32} style={{ objectFit: 'contain', mixBlendMode: 'screen' }} />
               <span className="text-sm font-medium tracking-wide" style={{ color: 'rgba(255,255,255,0.75)', borderLeft: '1px solid rgba(255,255,255,0.3)', paddingLeft: '12px' }}>在庫管理</span>
             </div>
           </div>
