@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import Image from 'next/image'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -25,9 +26,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen" style={{ background: '#f5f4f2', color: '#2a2a2a', fontFamily: "'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif" }}>
         <header style={{ background: '#1e3a5f', color: '#fff', paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }} className="px-5 pb-4 shadow-md">
           <div className="max-w-lg mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded" style={{ background: '#2d5a8e' }} />
-              <span className="font-semibold text-base tracking-wide">Connect Place 在庫管理</span>
+            <div className="flex items-center gap-3">
+              <Image src="/logo.jpg" alt="Connect Place" width={80} height={32} style={{ objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+              <span className="text-sm font-medium tracking-wide" style={{ color: 'rgba(255,255,255,0.75)', borderLeft: '1px solid rgba(255,255,255,0.3)', paddingLeft: '12px' }}>在庫管理</span>
             </div>
           </div>
         </header>
