@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: '在庫管理',
+  title: 'Connect Place 在庫管理',
   description: '消耗品・備品の在庫管理',
 }
 
@@ -14,7 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded" style={{ background: '#2d5a8e' }} />
-              <span className="font-semibold text-base tracking-wide">在庫管理</span>
+              <span className="font-semibold text-base tracking-wide">Connect Place 在庫管理</span>
             </div>
           </div>
         </header>
@@ -27,8 +27,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="max-w-lg mx-auto flex">
             {[
               { href: '/', icon: '▦', label: '一覧' },
-              { href: '/stock-in', icon: '↓', label: '入庫' },
-              { href: '/stock-out', icon: '↑', label: '使用' },
               { href: '/inventory', icon: '✓', label: '棚卸し' },
               { href: '/reports', icon: '≡', label: 'レポート' },
             ].map(({ href, icon, label }) => (
