@@ -103,34 +103,69 @@ export default function QuickAction({ item, onDone }: Props) {
       )}
 
       {mode === 'in' && (
-        <div className="rounded-xl p-3 mt-1 space-y-3" style={{ background: '#eef0f7' }}>
-          <div className="flex items-center">
-            <span className="text-sm font-medium" style={{ color: '#2d5a8e' }}>
-              入庫数量{item.items_per_box ? '（箱数）' : '（個）'}
-            </span>
+        <div className="rounded-xl p-3 mt-1 space-y-2" style={{ background: '#eef0f7' }}>
+          <div className="flex items-center mb-1">
+            <span className="text-sm font-medium" style={{ color: '#2d5a8e' }}>入庫数量</span>
             <button onClick={reset} className="ml-auto text-xs px-2 py-0.5 rounded"
               style={{ color: '#6b6b6b', background: '#e8e6e3' }}>取消</button>
           </div>
-          <div className="flex items-center gap-3">
-            <button onClick={() => setBoxes(b => Math.max(1, b - 1))}
-              className="w-10 h-10 rounded-full text-xl font-bold flex items-center justify-center"
-              style={{ background: '#fff', color: '#2a2a2a' }}>−</button>
-            <input type="number" min={1} value={boxes}
-              onChange={e => setBoxes(Math.max(1, parseInt(e.target.value) || 1))}
-              className="w-16 text-center text-xl font-bold rounded-lg py-1.5 border-0 outline-none"
-              style={{ background: '#fff' }} />
-            <button onClick={() => setBoxes(b => b + 1)}
-              className="w-10 h-10 rounded-full text-xl font-bold flex items-center justify-center"
-              style={{ background: '#fff', color: '#2a2a2a' }}>＋</button>
-            <span className="text-sm" style={{ color: '#2d5a8e' }}>
-              {item.items_per_box ? `箱 = ${inQty}個` : '個'}
-            </span>
-          </div>
-          <button onClick={handleSubmit} disabled={loading}
-            className="w-full py-2.5 rounded-lg text-sm font-bold transition-opacity disabled:opacity-50"
-            style={{ background: '#2d5a8e', color: '#fff' }}>
-            {loading ? '...' : '登録'}
-          </button>
+
+          {/* 1箱ボタン（items_per_box設定済みの場合） */}
+          {item.items_per_box ? (
+            <>
+              <button
+                onClick={async () => {
+                  setLoading(true)
+                  const qty = item.items_per_box!
+                  const newStock = item.current_stock + qty
+                  await supabase.from('stock_transactions').insert({
+                    item_id: item.id, type: 'in', quantity: qty,
+                    transaction_date: new Date().toISOString(),
+                  })
+                  await supabase.from('items').update({ current_stock: newStock }).eq('id', item.id)
+                  onDone({ ...item, current_stock: newStock })
+                  reset()
+                  setLoading(false)
+                }}
+                disabled={loading}
+                className="w-full py-3 rounded-lg text-sm font-bold transition-opacity disabled:opacity-50"
+                style={{ background: '#2d5a8e', color: '#fff' }}>
+                {loading ? '...' : `1箱まるごと入庫（${item.items_per_box}個）`}
+              </button>
+              <div className="text-xs text-center" style={{ color: '#9b9b9b' }}>複数箱の場合 ↓</div>
+              <div className="flex items-center gap-2">
+                <input type="number" min={1} value={boxes}
+                  onChange={e => setBoxes(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="w-16 text-center text-lg font-bold rounded-lg py-1.5 border-0 outline-none"
+                  style={{ background: '#fff' }} />
+                <span className="text-sm" style={{ color: '#2d5a8e' }}>箱 = {inQty}個</span>
+                <button onClick={handleSubmit} disabled={loading}
+                  className="flex-1 py-2 rounded-lg text-sm font-bold transition-opacity disabled:opacity-50"
+                  style={{ background: '#2d5a8e', color: '#fff' }}>
+                  {loading ? '...' : '登録'}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center gap-3">
+              <button onClick={() => setBoxes(b => Math.max(1, b - 1))}
+                className="w-10 h-10 rounded-full text-xl font-bold flex items-center justify-center"
+                style={{ background: '#fff', color: '#2a2a2a' }}>−</button>
+              <input type="number" min={1} value={boxes}
+                onChange={e => setBoxes(Math.max(1, parseInt(e.target.value) || 1))}
+                className="w-16 text-center text-xl font-bold rounded-lg py-1.5 border-0 outline-none"
+                style={{ background: '#fff' }} />
+              <button onClick={() => setBoxes(b => b + 1)}
+                className="w-10 h-10 rounded-full text-xl font-bold flex items-center justify-center"
+                style={{ background: '#fff', color: '#2a2a2a' }}>＋</button>
+              <span className="text-sm" style={{ color: '#2d5a8e' }}>個</span>
+              <button onClick={handleSubmit} disabled={loading}
+                className="flex-1 py-2 rounded-lg text-sm font-bold transition-opacity disabled:opacity-50"
+                style={{ background: '#2d5a8e', color: '#fff' }}>
+                {loading ? '...' : '登録'}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
