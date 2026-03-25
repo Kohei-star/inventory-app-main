@@ -52,7 +52,7 @@ export default function HomePage() {
             {lowStock.map(i => (
               <div key={i.id} className="flex justify-between text-sm" style={{ color: '#8a4a32' }}>
                 <span>{i.name}</span>
-                <span className="font-medium">残 {i.current_stock}</span>
+                <span className="font-medium">残 {i.current_stock}個</span>
               </div>
             ))}
           </div>
@@ -101,12 +101,17 @@ export default function HomePage() {
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <div className="text-2xl font-bold leading-tight"
-                    style={{ color: isLow ? '#b5644a' : '#1e3a5f' }}>
-                    {item.current_stock}
+                  <div className="flex items-baseline gap-1 justify-end">
+                    <div className="text-2xl font-bold leading-tight"
+                      style={{ color: isLow ? '#b5644a' : '#1e3a5f' }}>
+                      {item.current_stock}
+                    </div>
+                    <div className="text-xs" style={{ color: '#6b6b6b' }}>個</div>
                   </div>
-                  {item.purchase_unit && (
-                    <div className="text-xs" style={{ color: '#6b6b6b' }}>{item.purchase_unit}</div>
+                  {item.items_per_box && (
+                    <div className="text-xs" style={{ color: '#9b9b9b' }}>
+                      ≈{Math.floor(item.current_stock / item.items_per_box)}箱
+                    </div>
                   )}
                 </div>
               </div>

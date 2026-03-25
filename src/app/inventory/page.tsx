@@ -73,7 +73,7 @@ export default function InventoryPage() {
               <div className="flex items-center gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium truncate" style={{ color: '#2a2a2a' }}>{item.name}</div>
-                  <div className="text-xs" style={{ color: '#6b6b6b' }}>システム: {item.current_stock}</div>
+                  <div className="text-xs" style={{ color: '#6b6b6b' }}>システム: {item.current_stock}個</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <button onClick={() => setCounts(c => ({ ...c, [item.id]: Math.max(0, (c[item.id] ?? item.current_stock) - 1) }))}
