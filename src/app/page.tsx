@@ -7,9 +7,9 @@ import QuickAction from '@/components/QuickAction'
 import Link from 'next/link'
 
 const CATEGORY_LABELS: Record<string, string> = {
-  consumable: '消耗品',
+  facility: '施設備品',
   sellable: '販売品',
-  equipment: '備品',
+  aroma: 'アロマ',
 }
 
 export default function HomePage() {
@@ -70,7 +70,7 @@ export default function HomePage() {
           style={{ background: '#fff', border: '1px solid #e8e6e3', color: '#2a2a2a' }}
         />
         <div className="flex gap-2 overflow-x-auto pb-1">
-          {['all', 'consumable', 'sellable', 'equipment'].map(cat => (
+          {['all', 'facility', 'sellable', 'aroma'].map(cat => (
             <button key={cat}
               onClick={() => setCategory(cat)}
               className="flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-medium transition-colors"

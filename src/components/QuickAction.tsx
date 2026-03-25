@@ -11,34 +11,46 @@ interface Props {
 
 export default function QuickAction({ item, onDone }: Props) {
   const [mode, setMode] = useState<'in' | 'out' | null>(null)
-  const [quantity, setQuantity] = useState(1)
+  const [boxes, setBoxes] = useState(1)       // 入庫: 箱数
+  const [quantity, setQuantity] = useState(1) // 使用: 個数
+  const [residentName, setResidentName] = useState('')
   const [loading, setLoading] = useState(false)
   const supabase = createClient()
+
+  const perBox = item.items_per_box ?? 1
+  const inQty = boxes * perBox  // 入庫の実際の個数
+
+  function reset() {
+    setMode(null)
+    setBoxes(1)
+    setQuantity(1)
+    setResidentName('')
+  }
 
   async function handleSubmit() {
     if (!mode) return
     setLoading(true)
+    const qty = mode === 'in' ? inQty : quantity
     const newStock = mode === 'in'
-      ? item.current_stock + quantity
-      : Math.max(0, item.current_stock - quantity)
+      ? item.current_stock + qty
+      : Math.max(0, item.current_stock - qty)
 
     await supabase.from('stock_transactions').insert({
       item_id: item.id,
       type: mode,
-      quantity,
+      quantity: qty,
+      resident_name: mode === 'out' && residentName.trim() ? residentName.trim() : null,
       transaction_date: new Date().toISOString(),
     })
     await supabase.from('items').update({ current_stock: newStock }).eq('id', item.id)
 
     onDone({ ...item, current_stock: newStock })
-    setMode(null)
-    setQuantity(1)
+    reset()
     setLoading(false)
   }
 
   return (
     <div>
-      {/* 入庫・使用ボタン */}
       {!mode && (
         <div className="flex gap-2">
           <button onClick={() => setMode('out')}
@@ -54,38 +66,71 @@ export default function QuickAction({ item, onDone }: Props) {
         </div>
       )}
 
-      {/* 数量入力（インライン） */}
-      {mode && (
-        <div className="rounded-xl p-3 mt-1" style={{ background: mode === 'in' ? '#eef0f7' : '#eef4ee' }}>
-          <div className="flex items-center gap-3 mb-3">
-            <span className="text-sm font-medium" style={{ color: mode === 'in' ? '#2d5a8e' : '#3d6b47' }}>
-              {mode === 'in' ? '入庫数量' : '使用数量'}
-            </span>
-            <button onClick={() => { setMode(null); setQuantity(1) }}
-              className="ml-auto text-xs px-2 py-0.5 rounded"
-              style={{ color: '#6b6b6b', background: '#e8e6e3' }}>
-              取消
-            </button>
+      {mode === 'out' && (
+        <div className="rounded-xl p-3 mt-1 space-y-3" style={{ background: '#eef4ee' }}>
+          <div className="flex items-center">
+            <span className="text-sm font-medium" style={{ color: '#3d6b47' }}>使用数量（個）</span>
+            <button onClick={reset} className="ml-auto text-xs px-2 py-0.5 rounded"
+              style={{ color: '#6b6b6b', background: '#e8e6e3' }}>取消</button>
           </div>
           <div className="flex items-center gap-3">
             <button onClick={() => setQuantity(q => Math.max(1, q - 1))}
               className="w-10 h-10 rounded-full text-xl font-bold flex items-center justify-center"
               style={{ background: '#fff', color: '#2a2a2a' }}>−</button>
-            <input
-              type="number" min={1} value={quantity}
+            <input type="number" min={1} value={quantity}
               onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
               className="w-16 text-center text-xl font-bold rounded-lg py-1.5 border-0 outline-none"
-              style={{ background: '#fff' }}
-            />
+              style={{ background: '#fff' }} />
             <button onClick={() => setQuantity(q => q + 1)}
               className="w-10 h-10 rounded-full text-xl font-bold flex items-center justify-center"
               style={{ background: '#fff', color: '#2a2a2a' }}>＋</button>
-            <button onClick={handleSubmit} disabled={loading}
-              className="flex-1 py-2.5 rounded-lg text-sm font-bold transition-opacity disabled:opacity-50"
-              style={{ background: mode === 'in' ? '#2d5a8e' : '#3d6b47', color: '#fff' }}>
-              {loading ? '...' : '登録'}
-            </button>
+            <span className="text-sm" style={{ color: '#3d6b47' }}>個</span>
           </div>
+          <input
+            type="text"
+            value={residentName}
+            onChange={e => setResidentName(e.target.value)}
+            placeholder="利用者名（任意）"
+            className="w-full rounded-lg px-3 py-2 text-sm border-0 outline-none"
+            style={{ background: '#fff', color: '#2a2a2a' }}
+          />
+          <button onClick={handleSubmit} disabled={loading}
+            className="w-full py-2.5 rounded-lg text-sm font-bold transition-opacity disabled:opacity-50"
+            style={{ background: '#3d6b47', color: '#fff' }}>
+            {loading ? '...' : '登録'}
+          </button>
+        </div>
+      )}
+
+      {mode === 'in' && (
+        <div className="rounded-xl p-3 mt-1 space-y-3" style={{ background: '#eef0f7' }}>
+          <div className="flex items-center">
+            <span className="text-sm font-medium" style={{ color: '#2d5a8e' }}>
+              入庫数量{item.items_per_box ? '（箱数）' : '（個）'}
+            </span>
+            <button onClick={reset} className="ml-auto text-xs px-2 py-0.5 rounded"
+              style={{ color: '#6b6b6b', background: '#e8e6e3' }}>取消</button>
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setBoxes(b => Math.max(1, b - 1))}
+              className="w-10 h-10 rounded-full text-xl font-bold flex items-center justify-center"
+              style={{ background: '#fff', color: '#2a2a2a' }}>−</button>
+            <input type="number" min={1} value={boxes}
+              onChange={e => setBoxes(Math.max(1, parseInt(e.target.value) || 1))}
+              className="w-16 text-center text-xl font-bold rounded-lg py-1.5 border-0 outline-none"
+              style={{ background: '#fff' }} />
+            <button onClick={() => setBoxes(b => b + 1)}
+              className="w-10 h-10 rounded-full text-xl font-bold flex items-center justify-center"
+              style={{ background: '#fff', color: '#2a2a2a' }}>＋</button>
+            <span className="text-sm" style={{ color: '#2d5a8e' }}>
+              {item.items_per_box ? `箱 = ${inQty}個` : '個'}
+            </span>
+          </div>
+          <button onClick={handleSubmit} disabled={loading}
+            className="w-full py-2.5 rounded-lg text-sm font-bold transition-opacity disabled:opacity-50"
+            style={{ background: '#2d5a8e', color: '#fff' }}>
+            {loading ? '...' : '登録'}
+          </button>
         </div>
       )}
     </div>

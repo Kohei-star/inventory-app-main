@@ -1,4 +1,4 @@
-export type ItemCategory = 'consumable' | 'equipment' | 'sellable'
+export type ItemCategory = 'facility' | 'sellable' | 'aroma'
 
 export interface Item {
   id: string
@@ -14,6 +14,7 @@ export interface Item {
   sell_unit: string | null
   sell_price: number | null
   h_code: string | null
+  items_per_box: number | null
   created_at: string
 }
 
@@ -24,6 +25,7 @@ export interface StockTransaction {
   quantity: number
   note: string | null
   staff_name: string | null
+  resident_name: string | null
   transaction_date: string
   created_at: string
   items?: Item

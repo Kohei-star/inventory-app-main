@@ -10,7 +10,7 @@ export default function NewItemPage() {
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({
     name: '',
-    category: 'consumable',
+    category: 'facility',
     purchase_unit: '',
     purchase_price: '',
     vendor: '',
@@ -19,6 +19,7 @@ export default function NewItemPage() {
     min_stock: '',
     sell_unit: '',
     sell_price: '',
+    items_per_box: '',
   })
 
   const set = (key: string, value: string) => setForm(f => ({ ...f, [key]: value }))
@@ -44,6 +45,7 @@ export default function NewItemPage() {
       min_stock: form.min_stock ? parseInt(form.min_stock) : null,
       sell_unit: form.sell_unit || null,
       sell_price: form.sell_price ? parseInt(form.sell_price) : null,
+      items_per_box: form.items_per_box ? parseInt(form.items_per_box) : null,
     })
 
     router.push('/')
@@ -88,9 +90,9 @@ export default function NewItemPage() {
           <label style={labelStyle}>種別</label>
           <div className="flex gap-2">
             {[
-              { value: 'consumable', label: '消耗品' },
+              { value: 'facility', label: '施設備品' },
               { value: 'sellable', label: '販売品' },
-              { value: 'equipment', label: '備品' },
+              { value: 'aroma', label: 'アロマ' },
             ].map(opt => (
               <button type="button" key={opt.value}
                 onClick={() => set('category', opt.value)}
@@ -109,15 +111,26 @@ export default function NewItemPage() {
         {/* 現在庫・最低在庫 */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label style={labelStyle}>現在の在庫数</label>
+            <label style={labelStyle}>現在の在庫数（個）</label>
             <input type="number" min="0" value={form.current_stock}
               onChange={e => set('current_stock', e.target.value)} style={inputStyle} />
           </div>
           <div>
-            <label style={labelStyle}>最低在庫数（アラート用）</label>
+            <label style={labelStyle}>最低在庫数（個・アラート用）</label>
             <input type="number" min="0" value={form.min_stock}
               onChange={e => set('min_stock', e.target.value)}
               placeholder="未設定" style={inputStyle} />
+          </div>
+        </div>
+
+        {/* 入数（箱管理） */}
+        <div>
+          <label style={labelStyle}>入数（1箱あたりの個数）</label>
+          <input type="number" min="1" value={form.items_per_box}
+            onChange={e => set('items_per_box', e.target.value)}
+            placeholder="例：手袋は20（20個入り1箱）" style={inputStyle} />
+          <div className="text-xs mt-1" style={{ color: '#9b9b9b' }}>
+            設定すると入庫時に「箱数 → 個数」に自動換算されます
           </div>
         </div>
 
