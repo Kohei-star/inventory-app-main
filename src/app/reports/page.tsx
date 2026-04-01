@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import MonthlyExport from '@/components/MonthlyExport'
 
 export default async function ReportsPage() {
   const supabase = await createClient()
@@ -39,6 +40,8 @@ export default async function ReportsPage() {
   return (
     <div className="space-y-4">
       <h2 className="text-base font-semibold" style={{ color: '#1e3a5f' }}>レポート</h2>
+
+      <MonthlyExport />
 
       <div className="grid grid-cols-2 gap-3">
         <div style={cardStyle}>
