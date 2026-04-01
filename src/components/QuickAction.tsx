@@ -4,6 +4,15 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Item } from '@/types'
 
+const RESIDENTS = [
+  '土谷 妃', '松岡 文子', '田中 数人', '田島 寛治',
+  '安田 幸子', '齋藤 勢津子', '安永 和子', '犬束 紀行', '業務利用',
+]
+
+const STAFF = [
+  '山下亮', '山下敦子', '角田', '内田', '武内', '樋口', '舩津', '中尾', '野田',
+]
+
 interface Props {
   item: Item
   onDone: (updatedItem: Item) => void
@@ -11,20 +20,22 @@ interface Props {
 
 export default function QuickAction({ item, onDone }: Props) {
   const [mode, setMode] = useState<'in' | 'out' | null>(null)
-  const [boxes, setBoxes] = useState(1)       // 入庫: 箱数
-  const [quantity, setQuantity] = useState(1) // 使用: 個数
+  const [boxes, setBoxes] = useState(1)
+  const [quantity, setQuantity] = useState(1)
   const [residentName, setResidentName] = useState('')
+  const [staffName, setStaffName] = useState('')
   const [loading, setLoading] = useState(false)
   const supabase = createClient()
 
   const perBox = item.items_per_box ?? 1
-  const inQty = boxes * perBox  // 入庫の実際の個数
+  const inQty = boxes * perBox
 
   function reset() {
     setMode(null)
     setBoxes(1)
     setQuantity(1)
     setResidentName('')
+    setStaffName('')
   }
 
   async function handleSubmit() {
@@ -39,7 +50,8 @@ export default function QuickAction({ item, onDone }: Props) {
       item_id: item.id,
       type: mode,
       quantity: qty,
-      resident_name: mode === 'out' && residentName.trim() ? residentName.trim() : null,
+      resident_name: mode === 'out' && residentName ? residentName : null,
+      staff_name: staffName || null,
       transaction_date: new Date().toISOString(),
     })
     await supabase.from('items').update({ current_stock: newStock }).eq('id', item.id)
@@ -86,14 +98,22 @@ export default function QuickAction({ item, onDone }: Props) {
               style={{ background: '#fff', color: '#2a2a2a' }}>＋</button>
             <span className="text-sm" style={{ color: '#3d6b47' }}>個</span>
           </div>
-          <input
-            type="text"
+          <select
             value={residentName}
             onChange={e => setResidentName(e.target.value)}
-            placeholder="利用者名（任意）"
             className="w-full rounded-lg px-3 py-2 text-sm border-0 outline-none"
-            style={{ background: '#fff', color: '#2a2a2a' }}
-          />
+            style={{ background: '#fff', color: residentName ? '#2a2a2a' : '#9b9b9b' }}>
+            <option value="">利用者を選択</option>
+            {RESIDENTS.map(r => <option key={r} value={r}>{r}</option>)}
+          </select>
+          <select
+            value={staffName}
+            onChange={e => setStaffName(e.target.value)}
+            className="w-full rounded-lg px-3 py-2 text-sm border-0 outline-none"
+            style={{ background: '#fff', color: staffName ? '#2a2a2a' : '#9b9b9b' }}>
+            <option value="">職員を選択</option>
+            {STAFF.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
           <button onClick={handleSubmit} disabled={loading}
             className="w-full py-2.5 rounded-lg text-sm font-bold transition-opacity disabled:opacity-50"
             style={{ background: '#3d6b47', color: '#fff' }}>
