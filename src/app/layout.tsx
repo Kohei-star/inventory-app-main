@@ -45,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {[
               { href: '/', icon: '▦', label: '一覧' },
               { href: '/inventory', icon: '✓', label: '棚卸し' },
+              { href: '/import', icon: '📷', label: '取込' },
               { href: '/reports', icon: '≡', label: 'レポート' },
               { href: '/items', icon: '⊕', label: '品目管理' },
             ].map(({ href, icon, label }) => (
